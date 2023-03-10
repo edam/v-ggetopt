@@ -60,8 +60,8 @@ as it can be derived from the long options.
 
 Note that the array of options (`OptDef`s, actually) is built-up with the
 following functions:
-* factory function `option(long_name string, short_opt ?rune)`
-* extend options with `.arg(arg_name string, required bool)`
+* option factory function: `option(long_name string, short_opt ?rune)`
+* extend options with: `.arg(arg_name string, required bool)`
 
 ``` V
 import edam.ggetopt
@@ -100,7 +100,7 @@ fn main() {
 	if opts.verbose {
 		println('debug: printing message')
 	}
-	greet := if tmp := opts.insult { 'Hi ${tmp}' } else { 'Hello' }
+	greet := if insult := opts.insult { 'Hi ${insult}' } else { 'Hello' }
 	println('${greet} ${opts.name}!')
 	if rest.len > 0 {
 		println(rest.join(' '))
@@ -116,13 +116,15 @@ To use `getopt_long()` and `getopt_long_cli()`, you must pass in an array of
 strings, which can be used by `print_help()` to generate some sensible-looking
 help text.
 
-* extend options with `.help(text string)`
-* factory function `text(text string)`
+* extend options with: `.help(text string)`
+* line of text (not an option) factory function: `text(text string)`
+* default `--help` option factory function: `option_help()`
+* default `--version` option factory function: `option_version()`
 
 ``` V
 const (
     options = [
-        ggetopt.text('Usage: myprogram [OPTION]... [MESSAGE]...')
+        ggetopt.text('Usage: myprog [OPTION]... [MESSAGE]...')
         ggetopt.text('')
 		ggetopt.text('Options:')
         ggetopt.option('user', `u`).arg('NAME', true)
@@ -139,7 +141,7 @@ const (
 Then, `print_help()` will output:
 
 ```
-Usage: myprogram [OPTION]... [MESSAGE]...
+Usage: myprog [OPTION]... [MESSAGE]...
 
 Options:
   -u, --user=NAME           provide the user's NAME
