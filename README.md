@@ -58,9 +58,10 @@ Defining long options is done in an array, just like `getopt_long()` in C, but,
 as a small improvement, the short options string no longer needs to be supplied
 as it can be derived from the long options.
 
-Note that the options are built-up, with the following functions:
-* `option(long_name ?string, short_opt ?rune)`
-* `.arg(arg_name string, required bool)`
+Note that the array of options (`OptDef`s, actually) is built-up with the
+following functions:
+* factory function `option(long_name string, short_opt ?rune)`
+* extend options with `.arg(arg_name string, required bool)`
 
 ``` V
 import edam.ggetopt
@@ -68,7 +69,7 @@ import edam.ggetopt
 [heap]
 struct Options {
 mut:
-	name    string
+	name    string = 'user'
 	insult  ?string
 	verbose bool
 }
@@ -93,9 +94,7 @@ fn (mut o Options) process_arg(arg string, val ?string) ! {
 }
 
 fn main() {
-	mut opts := Options{
-		name: 'user'
-	}
+	mut opts := Options{}
 	rest := ggetopt.getopt_long_cli(options, opts.process_arg) or { exit(1) }
 
 	if opts.verbose {
@@ -114,10 +113,11 @@ OptDefs and Automatic Help (getting fancy!)
 
 To use `getopt_long()` and `getopt_long_cli()`, you must pass in an array of
 `OptDef`s.  These define the available options, but can also define help
-strings, which can be used by `print_help()` to generate sensible-looking help
-in an albeit limit fashion.
+strings, which can be used by `print_help()` to generate some sensible-looking
+help text.
 
-Here is how you might define the above options to include help:
+* extend options with `.help(text string)`
+* factory function `text(text string)`
 
 ``` V
 const (
