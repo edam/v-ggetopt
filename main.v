@@ -6,10 +6,6 @@ module ggetopt
 
 import os
 
-const (
-	max_help_offset = 40 // longest long-opt name before help uses 2 lines
-)
-
 pub struct OptDef {
 	long  ?string    // optional long option
 	short ?rune      // optional short option
@@ -51,63 +47,66 @@ pub fn getopt_long_cli(options []OptDef, process_fn ProcessFn) ![]string {
 // handed off to the process function, one at a time, and remaining arguments
 // are returned.
 pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]string {
-    shortopts, longopts, max_long_idx := gen_getopt_opts(options)!
-    argc, argv := gen_c_args(args)
-    defer { unsafe{ free( argv ) } }
-    $if ggetopt_debug ? {
-        println("---argc: ${argc}")
-    }
-    mut idx := int(0)
-    for {
-        opt := C.getopt_long(argc, argv, shortopts.str, &longopts[0], &idx)
-        $if ggetopt_debug ? {
-            ch := if opt < 256 { u8(opt).ascii_str() } else { "" }
-            println("---OPT: ${opt} (${ch}), idx ${idx} (optopt: ${C.optopt}, optarg: ${C.optarg}, optind: ${C.optind})")
-        }
-        if opt < 0 {
-            break
-        } else if opt == 63 && C.optopt != 0 { // ? and optopt set
-            ch := u8(C.optopt).ascii_str()
-            if _ := options.find_short(ch[0]) {
-                return error('option requires an argument: -${ch}')
-            } else if C.optopt >= 32 && C.optopt <= 126 { // C.isprint()
-                return error('invalid option: -${ch}')
-            } else if C.optopt >= 256 && C.optopt <= 256 + max_long_idx {
-                long := options[C.optopt - 256].long or {""}
-                return error('option requires an argument: --${long}')
-            } else {
-                return error('invalid character: \\x${u32(C.optopt):x}')
-            }
-        } else if opt == 63 && max_long_idx >= 0 { // ? and we're using longopts
-            return error("unrecognised option: ${args[C.optind - 2]}")
-        } else {
-            mut arg := ?string(none)
-            if C.optarg != 0 {
-                arg = unsafe{ cstring_to_vstring( &char(C.optarg) ) }
-            }
-            if opt < 256 {
-                $if ggetopt_debug ? {
-                    println("===${u8(opt).ascii_str()}")
-                }
-                process_fn(u8(opt).ascii_str(), arg)!
-            } else {
-                option := options[opt - 256]
-                $if ggetopt_debug ? {
-                    println("===${option.long or {""}}")
-                }
-                process_fn(option.long or {""}, arg)!
-            }
-        }
-    }
-    $if ggetopt_debug ? {
-        println("---remain idx: ${C.optind}")
-    }
-    return args[(C.optind - 1)..]
+	shortopts, longopts, max_long_idx := gen_getopt_opts(options)!
+	argc, argv := gen_c_args(args)
+	defer {
+		unsafe { free(argv) }
+	}
+	$if ggetopt_debug ? {
+		println('---argc: ${argc}')
+        println("---shortopts: ${shortopts}")
+	}
+	mut idx := int(0)
+	for {
+		opt := C.getopt_long(argc, argv, shortopts.str, &longopts[0], &idx)
+		$if ggetopt_debug ? {
+			ch := if opt < 256 { u8(opt).ascii_str() } else { '' }
+			println('---OPT: ${opt} (${ch}), idx ${idx} (optopt: ${C.optopt}, optarg: ${C.optarg}, optind: ${C.optind})')
+		}
+		if opt < 0 {
+			break
+		} else if opt == 63 && C.optopt != 0 { // ? and optopt set
+			ch := u8(C.optopt).ascii_str()
+			if _ := options.find_short(ch[0]) {
+				return error('option requires an argument: -${ch}')
+			} else if C.optopt >= 32 && C.optopt <= 126 { // C.isprint()
+				return error('invalid option: -${ch}')
+			} else if C.optopt >= 256 && C.optopt <= 256 + max_long_idx {
+				long := options[C.optopt - 256].long or { '' }
+				return error('option requires an argument: --${long}')
+			} else {
+				return error('invalid character: \\x${u32(C.optopt):x}')
+			}
+		} else if opt == 63 && max_long_idx >= 0 { // ? and we're using longopts
+			return error('unrecognised option: ${args[C.optind - 2]}')
+		} else {
+			mut arg := ?string(none)
+			if C.optarg != 0 {
+				arg = unsafe { cstring_to_vstring(&char(C.optarg)) }
+			}
+			if opt < 256 {
+				$if ggetopt_debug ? {
+					println('===${u8(opt).ascii_str()}')
+				}
+				process_fn(u8(opt).ascii_str(), arg)!
+			} else {
+				option := options[opt - 256]
+				$if ggetopt_debug ? {
+					println('===${option.long or { '' }}')
+				}
+				process_fn(option.long or { '' }, arg)!
+			}
+		}
+	}
+	$if ggetopt_debug ? {
+		println('---remain idx: ${C.optind}')
+	}
+	return args[(C.optind - 1)..]
 }
 
 // Turn on/off printing of errors to stderr.  Enabled by default.
 pub fn report_errors(enable bool) {
-    C.opterr = if enable { 1 } else { 0 }
+	C.opterr = if enable { 1 } else { 0 }
 }
 
 // OptDefs functions
@@ -168,37 +167,37 @@ pub fn text(text string) OptDef {
 
 // Find an OptDef by it's short option.
 pub fn (opts []OptDef) find_short(short rune) ?OptDef {
-    for opt in opts {
-        if opt.short or {` `} == short {
-            return opt
-        }
-    }
-    return none
+	for opt in opts {
+		if opt.short or { ` ` } == short {
+			return opt
+		}
+	}
+	return none
 }
 
 // Find an OptDef by it's short option.
 pub fn (opts []OptDef) find_long(long string) ?OptDef {
-    for opt in opts {
-        if opt.long or {''} == long {
-            return opt
-        }
-    }
-    return none
+	for opt in opts {
+		if opt.long or { '' } == long {
+			return opt
+		}
+	}
+	return none
 }
 
 [deprecated: 'use opt() instead']
 pub fn option(long ?string, short ?rune) OptDef {
-    return opt(long, short)
+	return opt(long, short)
 }
 
 [deprecated: 'use opt_help() instead']
 pub fn option_help() OptDef {
-    return opt_help()
+	return opt_help()
 }
 
 [deprecated: 'use opt_version() instead']
 pub fn option_version() OptDef {
-    return opt_version()
+	return opt_version()
 }
 
 // Help

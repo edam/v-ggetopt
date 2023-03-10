@@ -12,10 +12,10 @@ module ggetopt
 #include <getopt.h>
 
 struct C.option {
-    name &char
-    has_arg int
-    flag &int
-    val int
+	name    &char
+	has_arg int
+	flag    &int
+	val     int
 }
 
 fn C.getopt_long(argc int, argv &&char, shortopts &char, longopts &C.option, indexptr &int) int
