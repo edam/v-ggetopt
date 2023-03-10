@@ -39,7 +39,7 @@ fn main() {
 		match arg {
 			'v' { opts.verbose = true }
 			'u' { opts.name = val or { '' } }
-			'?' { println('Usage: foo [-v] [-u USER] [-?]') exit(0) }
+			'?' { println('Usage: myprog [-v] [-u NAME] [-?]') exit(0) }
 			else {}
 		}
 	}) or { exit(1) }
@@ -77,7 +77,7 @@ mut:
 const (
 	options = [
 		ggetopt.opt('user', `u`).arg('NAME', true),
-		ggetopt.opt('insult', none).arg('ADJECTIVE', false),
+		ggetopt.opt('insult', `i`).arg('ADJECTIVE', false),
 		ggetopt.opt('verbose', none),
 		ggetopt.opt_help(),
 	]
@@ -86,7 +86,7 @@ const (
 fn (mut o Options) process_arg(arg string, val ?string) ! {
 	match arg {
 		'u', 'user' { o.name = val or { '' } }
-		'insult' { o.insult = val or { 'stinky' } }
+		'i', 'insult' { o.insult = val or { 'stinky' } }
 		'verbose' { o.verbose = true }
 		'help' { ggetopt.print_help(options) exit(0) }
 		else {}
@@ -122,17 +122,18 @@ help text.
 * default `--version` option factory function: `opt_version()`
 
 ``` V
+
 const (
     options = [
         ggetopt.text('Usage: myprog [OPTION]... [MESSAGE]...')
         ggetopt.text('')
-		ggetopt.text('Options:')
+        ggetopt.text('Options:')
         ggetopt.opt('user', `u`).arg('NAME', true)
             .help("provide the user's NAME")
-        ggetopt.opt('insult', none).arg('ADJECTIVE', false)
+        ggetopt.opt('insult', `i`).arg('ADJECTIVE', false)
             .help('insult the user (default: stinky)')
         ggetopt.opt('verbose', none)
-            .help('display debug information')
+            .help('show debug information')
         ggetopt.opt_help()
     ]
 )
@@ -145,8 +146,8 @@ Usage: myprog [OPTION]... [MESSAGE]...
 
 Options:
   -u, --user=NAME           provide the user's NAME
-      --insult[=ADJECTIVE]  insult the user (default: stinky)
-      --verbose             display debug information
+  -i, --insult[=ADJECTIVE]  insult the user (default: stinky)
+      --verbose             show debug information
       --help                display this help and exit
 ```
 
@@ -188,6 +189,7 @@ Changes
 -------
 
 0.1 Initial version
+0.2 Renamed opt() fns
 
 Licence
 -------
