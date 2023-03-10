@@ -105,12 +105,17 @@ pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]str
     return args[(C.optind - 1)..]
 }
 
-// OptDefs factory/builder/util functions
+// Turn on/off printing of errors to stderr.  Enabled by default.
+pub fn report_errors(enable bool) {
+    C.opterr = if enable { 1 } else { 0 }
+}
+
+// OptDefs functions
 
 // Make an OptDef for a long option with optional short option, which can be
 // extended via .arg() and .help() methods.
 [inline]
-pub fn option(long ?string, short ?rune) OptDef {
+pub fn opt(long ?string, short ?rune) OptDef {
 	return OptDef{
 		long: long
 		short: short
@@ -139,7 +144,7 @@ pub fn (o &OptDef) help(help string) OptDef {
 }
 
 // Make an OptDef for a --help option
-pub fn option_help() OptDef {
+pub fn opt_help() OptDef {
 	return OptDef{
 		long: 'help'
 		help: 'display this help and exit'
@@ -147,7 +152,7 @@ pub fn option_help() OptDef {
 }
 
 // Make an OptDef for a --version option
-pub fn option_version() OptDef {
+pub fn opt_version() OptDef {
 	return OptDef{
 		long: 'version'
 		help: 'output version information and exit'
@@ -181,6 +186,21 @@ pub fn (opts []OptDef) find_long(long string) ?OptDef {
     return none
 }
 
+[deprecated: 'use opt() instead']
+pub fn option(long ?string, short ?rune) OptDef {
+    return opt(long, short)
+}
+
+[deprecated: 'use opt_help() instead']
+pub fn option_help() OptDef {
+    return opt_help()
+}
+
+[deprecated: 'use opt_version() instead']
+pub fn option_version() OptDef {
+    return opt_version()
+}
+
 // Help
 
 // Generate and print program help (e.g., in response to --help), based on the
@@ -189,9 +209,4 @@ pub fn print_help(options []OptDef) {
 	for line in gen_help_lines(options) {
 		println(line)
 	}
-}
-
-// Turn on/off printing of errors to stderr.  Enabled by default.
-pub fn report_errors(enable bool) {
-    C.opterr = if enable { 1 } else { 0 }
 }

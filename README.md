@@ -60,8 +60,8 @@ as it can be derived from the long options.
 
 Note that the array of options (`OptDef`s, actually) is built-up with the
 following functions:
-* option factory function: `option(long_name string, short_opt ?rune)`
-* extend options with: `.arg(arg_name string, required bool)`
+* option factory function: `opt(long_name string, short_opt ?rune)`
+* extend option with an argument: `.arg(arg_name string, required bool)`
 
 ``` V
 import edam.ggetopt
@@ -76,10 +76,10 @@ mut:
 
 const (
 	options = [
-		ggetopt.option('user', `u`).arg('NAME', true),
-		ggetopt.option('insult', none).arg('ADJECTIVE', false),
-		ggetopt.option('verbose', none),
-		ggetopt.option_help(),
+		ggetopt.opt('user', `u`).arg('NAME', true),
+		ggetopt.opt('insult', none).arg('ADJECTIVE', false),
+		ggetopt.opt('verbose', none),
+		ggetopt.opt_help(),
 	]
 )
 
@@ -116,10 +116,10 @@ To use `getopt_long()` and `getopt_long_cli()`, you must pass in an array of
 strings, which can be used by `print_help()` to generate some sensible-looking
 help text.
 
-* extend options with: `.help(text string)`
+* extend option with help text: `.help(text string)`
 * line of text (not an option) factory function: `text(text string)`
-* default `--help` option factory function: `option_help()`
-* default `--version` option factory function: `option_version()`
+* default `--help` option factory function: `opt_help()`
+* default `--version` option factory function: `opt_version()`
 
 ``` V
 const (
@@ -127,13 +127,13 @@ const (
         ggetopt.text('Usage: myprog [OPTION]... [MESSAGE]...')
         ggetopt.text('')
 		ggetopt.text('Options:')
-        ggetopt.option('user', `u`).arg('NAME', true)
+        ggetopt.opt('user', `u`).arg('NAME', true)
             .help("provide the user's NAME")
-        ggetopt.option('insult', none).arg('ADJECTIVE', false)
+        ggetopt.opt('insult', none).arg('ADJECTIVE', false)
             .help('insult the user (default: stinky)')
-        ggetopt.option('verbose', none)
+        ggetopt.opt('verbose', none)
             .help('display debug information')
-        ggetopt.option_help()
+        ggetopt.opt_help()
     ]
 )
 ```
