@@ -126,9 +126,13 @@ fn gen_c_args(args []string) (int, &&char) {
 	// return argc, argv
 }
 
-fn gen_help_lines(options []OptDef) []string {
-	cols := math.max(min_columns, (os.getenv_opt('COLUMNS') or { '80' }).int())
-	max_offset := math.min(cols / 2, max_help_offset)
+fn gen_help_lines(options []OptDef, conf PrintHelpConfig) []string {
+    mut cols := conf.columns
+    if cols == 0 {
+        cols = (os.getenv_opt('COLUMNS') or { '80' }).int()
+    }
+    cols = math.max(conf.min_columns, cols)
+	max_offset := math.min(cols / 2, conf.max_offset)
 	mut has_short := false
 	mut has_long := false
 	for option in options {
@@ -160,7 +164,6 @@ fn gen_help_lines(options []OptDef) []string {
 			}
 		}
 	}
-	// println("long: ${has_long}, short: ${has_short}, offset: ${offset}")
 	mut out := []string{}
 	for option in options {
 		if option.short != none || option.long != none {
@@ -192,54 +195,60 @@ fn gen_help_lines(options []OptDef) []string {
 				}
 			}
 			if tmp := option.help {
-                lines := gen_wraped_lines(tmp, cols - offset, 2)
+				lines := gen_wraped_lines(tmp, cols - offset, conf.wrap_indent)
 				if line.len > offset - 2 {
 					out << line
-                    for text in lines {
-                        out << ' '.repeat(offset) + text
-                    }
+					for text in lines {
+						out << ' '.repeat(offset) + text
+					}
 				} else {
 					out << line + ' '.repeat(offset - line.len) + lines[0]
-                    for i := 1; i < lines.len; i++ {
-                        out << ' '.repeat(offset) + lines[i]
-                    }
+					for i := 1; i < lines.len; i++ {
+						out << ' '.repeat(offset) + lines[i]
+					}
 				}
 			} else {
-		        out << line
-            }
+				out << line
+			}
 		} else if tmp := option.help {
-            for line in gen_wraped_lines(tmp, cols, 0) {
-                out << line
-            }
+			for line in gen_wraped_lines(tmp, cols, 0) {
+				out << line
+			}
 		}
 	}
 	return out
 }
 
 fn gen_wraped_lines(line string, width int, indent int) []string {
-    mut lines := []string{}
-    lines << line
-    return lines
+	mut lines := []string{}
+	mut i := 0
+	mut actind := 0
+	// println("LINE: len ${line.len} ${line}")
+	for i < line.len {
+		for i < line.len && line[i] == ` ` {
+			i++
+		}
+		from := i
+		mut till := -1
+		mut insp := false
+		for i < line.len && (till == -1 || i - from <= (width - actind)) {
+			oldinsp := insp
+			insp = line[i] == ` `
+			if insp && !oldinsp {
+				till = i
+			}
+			i++
+		}
+		if i == line.len && !insp {
+			till = line.len
+		}
+		// println("from ${from} till ${till} i ${i}")
+		if till > -1 && till > from {
+			i = till + 1
+			// println("taking: [${line[from..till]}]")
+			lines << ' '.repeat(actind) + line[from..till]
+		}
+		actind = indent
+	}
+	return lines
 }
-
-//fn gen_wraped_lines(line, width, indent) []string {
-//    mut lines := []string{}
-//    for line.len > width {
-//        mut taken := 0
-//        mut take := 0
-//        for i := 0; i < lines.len; i++ {
-//            if lines[i] == ' ' {
-
-//            } else {
-//                take ++
-//            }
-//            match lines[i] {
-//                ' ' { split++ }
-//                '-' {  }
-//            }
-//        }
-
-//        mut take := 0
-//        for i := 0; line[i] in [` `]
-//    }
-//}

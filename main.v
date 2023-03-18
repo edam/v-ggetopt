@@ -54,7 +54,7 @@ pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]str
 	}
 	$if ggetopt_debug ? {
 		println('---argc: ${argc}')
-        println("---shortopts: ${shortopts}")
+		println('---shortopts: ${shortopts}')
 	}
 	mut idx := int(0)
 	for {
@@ -202,10 +202,20 @@ pub fn option_version() OptDef {
 
 // Help
 
+[params]
+pub struct PrintHelpConfig {
+	// wrapping
+	columns     int  // width of terminal (defaults to COLUMNS from environment)
+	min_columns int = 40 // min acceptable terminal width (columns)
+	wrap_indent int = 2 // after wrapping, indent by spaces
+	// line overflowing
+	max_offset int = 40 // longest option before starting on second line
+}
+
 // Generate and print program help (e.g., in response to --help), based on the
 // OptDefs provided.
-pub fn print_help(options []OptDef) {
-	for line in gen_help_lines(options) {
+pub fn print_help(options []OptDef, conf PrintHelpConfig) {
+	for line in gen_help_lines(options, conf) {
 		println(line)
 	}
 }
