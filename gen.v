@@ -127,11 +127,11 @@ fn gen_c_args(args []string) (int, &&char) {
 }
 
 fn gen_help_lines(options []OptDef, conf PrintHelpConfig) []string {
-    mut cols := conf.columns
-    if cols == 0 {
-        cols = (os.getenv_opt('COLUMNS') or { '80' }).int()
-    }
-    cols = math.max(conf.min_columns, cols)
+	mut cols := conf.columns
+	if cols == 0 {
+		cols = (os.getenv_opt('COLUMNS') or { '80' }).int()
+	}
+	cols = math.max(conf.min_columns, cols)
 	max_offset := math.min(cols / 2, conf.max_offset)
 	mut has_short := false
 	mut has_long := false
@@ -239,7 +239,7 @@ fn gen_wraped_lines(line string, width int, indent int) []string {
 			}
 			i++
 		}
-		if i == line.len && !insp {
+		if i == line.len && !insp && (till == -1 || i - from <= (width - actind)) {
 			till = line.len
 		}
 		// println("from ${from} till ${till} i ${i}")

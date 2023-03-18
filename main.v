@@ -205,7 +205,7 @@ pub fn option_version() OptDef {
 [params]
 pub struct PrintHelpConfig {
 	// wrapping
-	columns     int  // width of terminal (defaults to COLUMNS from environment)
+	columns     int // width of terminal (defaults to COLUMNS from environment)
 	min_columns int = 40 // min acceptable terminal width (columns)
 	wrap_indent int = 2 // after wrapping, indent by spaces
 	// line overflowing
