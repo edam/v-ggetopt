@@ -71,7 +71,7 @@ pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]str
 			if _ := options.find_short(ch[0]) {
 				return error('option requires an argument: -${ch}')
 			} else if C.optopt >= 32 && C.optopt <= 126 { // C.isprint()
-				return error('invalid option: -${ch}')
+				return error('unrecognised option: -${ch}')
 			} else if C.optopt >= 256 && C.optopt <= 256 + max_long_idx {
 				long := options[C.optopt - 256].long or { '' }
 				return error('option requires an argument: --${long}')
