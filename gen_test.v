@@ -50,18 +50,18 @@ fn test_line_wrapping() {
 }
 
 // fn test_opt_fns() {
-//    assert opt(none, none).help == none
-//    assert opt(none, none).help("foo").help != none
-//    assert opt("a", none).help("foo").long != none
-//    assert opt("a", none).help("foo").short == none
-//    assert opt(none, `a`).help("foo").short != none
-//    assert opt(none, `a`).help("foo").long == none
-//    assert opt_help().help != none
-//    assert opt_version().help != none
+//	assert opt(none, none).help == none
+//	assert opt(none, none).help('foo').help != none
+//	assert opt('a', none).help('foo').long != none
+//	assert opt('a', none).help('foo').short == none
+//	assert opt(none, `a`).help('foo').short != none
+//	assert opt(none, `a`).help('foo').long == none
+//	assert opt_help().help != none
+//	assert opt_version().help != none
 //}
 
 fn test_help_line() {
-    mut o := []OptDef{}
+	mut o := []OptDef{}
 
 	c1 := PrintHelpConfig{
 		columns: 40
@@ -77,17 +77,41 @@ fn test_help_line() {
 	o = [opt('aaa', `a`).arg('X', false).help('foo')]
 	assert gen_help_lines(o, c1) == ['  -a, --aaa[=X]  foo']
 
-	o = [opt('aaa', none).arg('X',true).help('foo')]
+	o = [opt('aaa', none).arg('X', true).help('foo')]
 	assert gen_help_lines(o, c1) == ['  --aaa=X  foo']
 	o = [opt('aaa', none).arg('X', false).help('foo')]
 	assert gen_help_lines(o, c1) == ['  --aaa[=X]  foo']
-	o = [opt('aaa', none).arg('X',true).help('foo'), opt(none, `b`)]
+	o = [opt('aaa', none).arg('X', true).help('foo'), opt(none, `b`)]
 	assert gen_help_lines(o, c1) == ['      --aaa=X  foo', '  -b']
 
-	o = [opt(none, `a`).arg('X',true).help('foo')]
+	o = [opt(none, `a`).arg('X', true).help('foo')]
 	assert gen_help_lines(o, c1) == ['  -a X  foo']
 	o = [opt(none, `a`).arg('X', false).help('foo')]
 	assert gen_help_lines(o, c1) == ['  -a [X]  foo']
-	o = [opt(none, `a`).arg('X',true).help('foo'), opt('bbb', none)]
+	o = [opt(none, `a`).arg('X', true).help('foo'), opt('bbb', none)]
 	assert gen_help_lines(o, c1) == ['  -a         foo', '      --bbb']
+
+	o = [opt('aaa', `a`), opt('bbbbbbbbbb', none).help('x x x x x x x x x x y y y y')]
+	assert gen_help_lines(o, c1) == ['  -a, --aaa', '      --bbbbbbbbbb  x x x x x x x x x x',
+		'                      y y y y']
+	o = [opt('aaa', `a`), opt('bbbbbbbbbbb', none).help('x x x x x x x x x x x x x x y y y y')]
+	assert gen_help_lines(o, c1) == ['  -a, --aaa', '      --bbbbbbbbbbb',
+		'             x x x x x x x x x x x x x x', '               y y y y']
+
+	o = [opt('aaa', `a`).help('x x x y y')]
+	c2 := PrintHelpConfig{
+		columns: 10
+		min_columns: 16 // so max_offset is 8 and is limited by min_offset (10)
+	}
+	assert gen_help_lines(o, c2) == ['  -a, --aaa', '          x x x', '            y y']
+	c3 := PrintHelpConfig{
+		columns: 10
+		min_columns: 26 // so max_offset is 13 and line wrapping isn't necessary
+	}
+	assert gen_help_lines(o, c3) == ['  -a, --aaa  x x x y y']
+	c4 := PrintHelpConfig{
+		columns: 10
+		min_columns: 25 // so max_offset is 12 and line wrapping is necessary
+	}
+	assert gen_help_lines(o, c4) == ['  -a, --aaa', '          x x x y y']
 }

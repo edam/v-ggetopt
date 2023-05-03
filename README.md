@@ -6,6 +6,11 @@ A module for the [V programming language] which facilitates the use of the
 
 Version 0.1
 
+Features:
+- v-like getopt() shim
+- v-like getopt_long() shim
+- auto `--help` output generation
+
 Installation
 ------------
 
@@ -18,11 +23,11 @@ Usage
 
 The API has been kept in the spirit of GNU getopt library.
 
-Short Options (basic usage)
----------------------------
+Short Options (not recommended)
+-------------------------------
 
-At its most basic, you can use `getopt()` to process only short options, just as
-you would GNU getopt library:
+At its most basic, you can use `getopt()` to process only short options,
+similary to how you would in C.
 
 ``` V
 import edam.ggetopt
@@ -50,6 +55,10 @@ fn main() {
 	println('Hi ${opts.name}!')
 }
 ```
+
+Note: `getopt_cli()` just calls `getopt()`, passing in `os.args`.
+
+Note: arguments are handled by a processing function.
 
 Long Options (typical usage)
 ----------------------------
@@ -112,7 +121,7 @@ OptDefs and Automatic Help (getting fancy!)
 -------------------------------------------
 
 To use `getopt_long()` and `getopt_long_cli()`, you must pass in an array of
-`OptDef`s.  These define the available options, but can also define help
+`OptDef`s.  These define the available options, but they can also define help
 strings, which can be used by `print_help()` to generate some sensible-looking
 help text.
 
@@ -120,6 +129,8 @@ help text.
 * line of text (not an option) factory function: `text(text string)`
 * default `--help` option factory function: `opt_help()`
 * default `--version` option factory function: `opt_version()`
+
+Note: all text/help output is line-wrapped.
 
 ``` V
 
@@ -155,16 +166,15 @@ Error handling
 --------------
 
 By default, GNU getopt writes errors to stderr (as well as returning them).
-This can be disabled, so that you can handle and display the errors yourself,
-like so:
+This can be disabled, so that you can display any returned error yourself:
 
 ``` V
 ggetopt.report_errors(false)
 ```
 
 The errors that are returned by `getopt()`, `getopt_cli()`, `getopt_long()` and
-`getopt_long_cli()` are essentially the same as the errors that GNU getopt
-displays.  They have been changed only to make them slightly more consistent.
+`getopt_long_cli()` are not entirely the same as the errors that GNU getopt
+displays.  They have been changed only for consistence.
 
 Development
 ===========
@@ -189,7 +199,7 @@ Changes
 -------
 
 0.1 Initial version
-0.2 Renamed opt() fns
+0.2 Renamed opt() fns; tests; help-gen improvements (wrapping, config)
 
 Licence
 -------
