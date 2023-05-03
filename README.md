@@ -7,9 +7,9 @@ A module for the [V programming language] which facilitates the use of the
 Version 0.2
 
 Features:
-- v-like getopt() shim
-- v-like getopt_long() shim
-- auto `--help` output generation
+- V-like getopt() shim
+- V-like getopt_long() shim
+- Auto `--help` output generation
 
 Installation
 ------------
