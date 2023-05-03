@@ -56,6 +56,7 @@ pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]str
 		println('---argc: ${argc}')
 		println('---shortopts: ${shortopts}')
 	}
+	C.optind = 1 // reset getopt
 	mut idx := int(0)
 	for {
 		opt := C.getopt_long(argc, argv, shortopts.str, &longopts[0], &idx)
