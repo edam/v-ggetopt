@@ -4,7 +4,7 @@ ggetopt
 A module for the [V programming language] which facilitates the use of the
 [GNU Getopt library] via a more V-like interface.
 
-Version 0.1
+Version 0.2
 
 Features:
 - v-like getopt() shim
