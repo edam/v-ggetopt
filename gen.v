@@ -120,7 +120,15 @@ fn gen_c_args(args []string) (int, &&char) {
 	// return argc, argv
 }
 
-fn gen_help_lines(options []OptDef, conf PrintHelpConfig) []string {
+fn calc_cols(conf PrintConfig) int {
+	mut cols := conf.columns
+	if cols <= 0 {
+		cols = (os.getenv_opt('COLUMNS') or { '80' }).int()
+	}
+	return math.max(conf.min_columns, cols)
+}
+
+fn gen_help_lines(options []OptDef, conf PrintConfig) []string {
 	mut has_short := false
 	mut has_long := false
 	for option in options {
@@ -131,11 +139,7 @@ fn gen_help_lines(options []OptDef, conf PrintHelpConfig) []string {
 			has_long = true
 		}
 	}
-	mut cols := conf.columns
-	if cols == 0 {
-		cols = (os.getenv_opt('COLUMNS') or { '80' }).int()
-	}
-	cols = math.max(conf.min_columns, cols)
+	cols := calc_cols(conf)
 	min_offset := match true {
 		has_long && has_short { 10 }
 		has_long || has_short { 6 }
@@ -185,7 +189,7 @@ fn gen_help_lines(options []OptDef, conf PrintHelpConfig) []string {
 			}
 			if help := option.help {
 				// println("cols ${cols} cols-offset ${cols - offset} help [${help}]")
-				lines := gen_wraped_lines(help, cols - offset, conf.wrap_indent)
+				lines := gen_wrapped_lines(help, cols - offset, conf.wrap_indent)
 				if line.len > offset - 2 {
 					out << line
 					for text in lines {
@@ -201,7 +205,7 @@ fn gen_help_lines(options []OptDef, conf PrintHelpConfig) []string {
 				out << line
 			}
 		} else if help := option.help {
-			for line in gen_wraped_lines(help, cols, 0) {
+			for line in gen_wrapped_lines(help, cols, 0) {
 				out << line
 			}
 		}
@@ -209,7 +213,7 @@ fn gen_help_lines(options []OptDef, conf PrintHelpConfig) []string {
 	return out
 }
 
-fn gen_wraped_lines(line string, width int, indent int) []string {
+fn gen_wrapped_lines(line string, width int, indent int) []string {
 	mut lines := []string{}
 	mut i := 0
 	mut actind := 0

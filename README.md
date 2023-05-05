@@ -26,8 +26,9 @@ The API has been kept in the spirit of GNU getopt library.
 Short Options (not recommended)
 -------------------------------
 
-At its most basic, you can use `getopt()` to process only short options,
-similary to how you would in C.
+At its most basic, you can use `getopt()` to process only short options, similar
+to how you would in C.  The only major different is that processing programme
+arguments is done in a function, not a loop.
 
 ``` V
 import edam.ggetopt
@@ -57,8 +58,6 @@ fn main() {
 ```
 
 Note: `getopt_cli()` just calls `getopt()`, passing in `os.args`.
-
-Note: arguments are handled by a processing function.
 
 Long Options (typical usage)
 ----------------------------
@@ -130,7 +129,7 @@ help text.
 * default `--help` option factory function: `opt_help()`
 * default `--version` option factory function: `opt_version()`
 
-Note: all text/help output is line-wrapped.
+All help/text output is line-wrapped.
 
 ``` V
 
@@ -161,6 +160,8 @@ Options:
       --verbose             show debug information
       --help                display this help and exit
 ```
+
+Note, there's also a `print_version()` to help with `--version` output.
 
 Error handling
 --------------
@@ -201,6 +202,8 @@ Changes
 0.1 Initial version
 
 0.2 Renamed opt() fns; tests; help-gen improvements (wrapping, config)
+
+0.3 Added print_version(); fixed tests
 
 Licence
 -------

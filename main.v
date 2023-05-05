@@ -201,10 +201,10 @@ pub fn option_version() OptDef {
 	return opt_version()
 }
 
-// Help
+// Help Generation
 
 [params]
-pub struct PrintHelpConfig {
+pub struct PrintConfig {
 	// wrapping
 	columns     int // width of terminal (defaults to COLUMNS from environment)
 	min_columns int = 40 // min acceptable terminal width (columns)
@@ -215,8 +215,20 @@ pub struct PrintHelpConfig {
 
 // Generate and print program help (e.g., in response to --help), based on the
 // OptDefs provided.
-pub fn print_help(options []OptDef, conf PrintHelpConfig) {
+pub fn print_help(options []OptDef, conf PrintConfig) {
 	for line in gen_help_lines(options, conf) {
 		println(line)
+	}
+}
+
+// Print output for --version, based on executable name.
+pub fn print_version(version string, description []string, conf PrintConfig) {
+	app := os.base(os.args[0])
+	println('${app} ${version}')
+	cols := calc_cols(conf)
+	for line in description {
+		for wrapped_line in gen_wrapped_lines(line, cols, 0) {
+			println(wrapped_line)
+		}
 	}
 }

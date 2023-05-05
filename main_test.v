@@ -17,14 +17,33 @@ fn test_shortopts() {
 		ot.cleanup()
 	}
 
+	ot.run_ok('') // test runs ok
+
 	// inbuilt errors
-	ot.fail_run('-x') // invalid option -- x
-	ot.fail_run('--xxx') // unrecognised option '--xxx'
+	ot.run_fail('-x') // invalid option -- x
+	ot.run_fail('--xxx') // unrecognised option '--xxx'
 
 	// consistent errors
 	ot.fail_with('-x', 'unrecognised option: -x')
 	ot.fail_with('--xxx', 'unrecognised option: --xxx')
 }
+
+fn test_version() {
+	o := [
+		opt_help(),
+		opt_version(),
+	]
+
+	ot := new_opt_tester(o)
+	defer {
+		ot.cleanup()
+	}
+
+	// inbuilt errors
+	ot.run_version()
+}
+
+// --
 
 struct OptTester {
 	options []OptDef
@@ -34,25 +53,40 @@ struct OptTester {
 fn new_opt_tester(options []OptDef) &OptTester {
 	mut gen_opts := []string{}
 	for opt in options {
-		long := if l := opt.long { '"${l}"' } else { 'none' }
-		short := if s := opt.short { '`${s}`' } else { 'none' }
-		mut gen_opt := 'opt(${long}, ${short})'
-		if arg := opt.arg {
-			gen_opt += '.arg("${arg.name}", ${!arg.optional})'
-		}
-		if help := opt.help {
-			gen_opt += '.help("${help}")'
+		mut gen_opt := ''
+		long := opt.long or { '' }
+		match long {
+			'help' {
+				gen_opt = 'ggetopt.opt_help()'
+			}
+			'version' {
+				gen_opt = 'ggetopt.opt_version()'
+			}
+			else {
+				ll := if l := opt.long { '"${l}"' } else { 'none' }
+				ss := if s := opt.short { '`${s}`' } else { 'none' }
+				gen_opt = 'ggetopt.opt(${ll}, ${ss})'
+				if arg := opt.arg {
+					gen_opt += '.arg("${arg.name}", ${!arg.optional})'
+				}
+				if help := opt.help {
+					gen_opt += '.help("${help}")'
+				}
+			}
 		}
 		gen_opt += ','
 		gen_opts << gen_opt
 	}
-	content := '
-fn mock_proc_fn(arg string, optarg ?string) ! {}
+	content := 'import edam.ggetopt
+const opts = [
+    ${gen_opts.join('\n        ')}
+]
+fn proc_fn(arg string, optarg ?string) ! {
+    if arg == "version" { ggetopt.print_version("x", ["y"]) exit(0) }
+    if arg == "help" { ggetopt.print_help(opts) exit(0) }
+}
 fn main() {
-    o := [
-        ${gen_opts.join('\n        ')}
-    ]
-    ggetopt.getopt_long_cli(options, opts.process_arg) or { exit(1) }
+    ggetopt.getopt_long_cli(opts, proc_fn) or { exit(1) }
 }'
 	vfile := os.join_path(os.vtmp_dir(), rand.string(8) + '.v')
 	os.write_file(vfile, content) or { panic(err) }
@@ -75,17 +109,41 @@ fn (ot &OptTester) fail_with(args string, expect_err string) {
 	}
 }
 
-fn (ot &OptTester) fail_run(args string) {
-	// run via OS
-	vexe := os.find_abs_path_of_executable('v') or { panic(err) }
-	mut p := os.new_process(vexe)
-	p.set_args(args.split('run "${ot.vfile}" -- ${args}'))
+fn run(cmd string) (int, string, string) {
+	println(cmd)
+	args := cmd.split(' ')
+	exe := os.find_abs_path_of_executable(args[0]) or { panic(err) }
+	mut p := os.new_process(exe)
+	p.set_args(args[1..])
 	p.set_redirect_stdio()
 	p.run()
 	p.wait()
-	assert p.code != 0
-	assert p.stderr_slurp().len > 0
+	code := p.code
+	out := p.stdout_slurp()
+	err := p.stderr_slurp()
 	p.close()
+	println('exit: ${code}')
+	println('out: ${out}')
+	println('err: ${err}')
+	return code, out, err
+}
+
+fn (ot &OptTester) run_ok(args string) {
+	code, _, _ := run('v run ${ot.vfile} ${args}')
+	assert code == 0
+}
+
+fn (ot &OptTester) run_fail(args string) {
+	code, _, err := run('v run ${ot.vfile} ${args}')
+	assert code != 0
+	assert err.len > 0
+}
+
+fn (ot &OptTester) run_version() {
+	code, out, err := run('v run ${ot.vfile} --version')
+	assert code == 0
+	app := os.base(ot.vfile)[..8]
+	assert out == '${app} x\ny\n'
 }
 
 fn (ot &OptTester) cleanup() {
