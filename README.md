@@ -35,25 +35,25 @@ import edam.ggetopt
 
 struct Options {
 mut:
-	verbose bool
-	name    string = 'user'
+    verbose bool
+    name    string = 'user'
 }
 
 fn main() {
-	mut opts := &Options{}
-	ggetopt.getopt_cli('vu:?', fn [mut opts] (arg string, val ?string) ! {
-		match arg {
-			'v' { opts.verbose = true }
-			'u' { opts.name = val or { '' } }
-			'?' { println('Usage: myprog [-v] [-u NAME] [-?]') exit(0) }
-			else {}
-		}
-	}) or { exit(1) }
+    mut opts := &Options{}
+    ggetopt.getopt_cli('vu:?', fn [mut opts] (arg string, val ?string) ! {
+        match arg {
+            'v' { opts.verbose = true }
+            'u' { opts.name = val or { '' } }
+            '?' { println('Usage: myprog [-v] [-u NAME] [-?]') exit(0) }
+            else {}
+        }
+    }) or { exit(1) }
 
-	if opts.verbose {
-		println('debug: printing name')
-	}
-	println('Hi ${opts.name}!')
+    if opts.verbose {
+        println('debug: printing name')
+    }
+    println('Hi ${opts.name}!')
 }
 ```
 
@@ -70,49 +70,50 @@ Note that the array of options (`OptDef`s, actually) is built-up with the
 following functions:
 * option factory function: `opt(long_name string, short_opt ?rune)`
 * extend option with an argument: `.arg(arg_name string, required bool)`
+* default `--help` option factory function: `opt_help()`
 
 ``` V
 import edam.ggetopt
 
+const (
+    options = [
+        ggetopt.opt('user', `u`).arg('NAME', true),
+        ggetopt.opt('insult', `i`).arg('ADJECTIVE', false),
+        ggetopt.opt('verbose', none),
+        ggetopt.opt_help(),
+    ]
+)
+
 [heap]
 struct Options {
 mut:
-	name    string = 'user'
-	insult  ?string
-	verbose bool
+    name    string = 'user'
+    insult  ?string
+    verbose bool
 }
 
-const (
-	options = [
-		ggetopt.opt('user', `u`).arg('NAME', true),
-		ggetopt.opt('insult', `i`).arg('ADJECTIVE', false),
-		ggetopt.opt('verbose', none),
-		ggetopt.opt_help(),
-	]
-)
-
 fn (mut o Options) process_arg(arg string, val ?string) ! {
-	match arg {
-		'u', 'user' { o.name = val or { '' } }
-		'i', 'insult' { o.insult = val or { 'stinky' } }
-		'verbose' { o.verbose = true }
-		'help' { ggetopt.print_help(options) exit(0) }
-		else {}
-	}
+    match arg {
+        'u', 'user' { o.name = val or { '' } }
+        'i', 'insult' { o.insult = val or { 'stinky' } }
+        'verbose' { o.verbose = true }
+        'help' { ggetopt.print_help(options) exit(0) }
+        else {}
+    }
 }
 
 fn main() {
-	mut opts := Options{}
-	rest := ggetopt.getopt_long_cli(options, opts.process_arg) or { exit(1) }
+    mut opts := Options{}
+    rest := ggetopt.getopt_long_cli(options, opts.process_arg) or { exit(1) }
 
-	if opts.verbose {
-		println('debug: printing message')
-	}
-	greet := if insult := opts.insult { 'Hi ${insult}' } else { 'Hello' }
-	println('${greet} ${opts.name}!')
-	if rest.len > 0 {
-		println(rest.join(' '))
-	}
+    if opts.verbose {
+        println('debug: printing message')
+    }
+    greet := if insult := opts.insult { 'Hi ${insult}' } else { 'Hello' }
+    println('${greet} ${opts.name}!')
+    if rest.len > 0 {
+        println(rest.join(' '))
+    }
 }
 ```
 
@@ -132,7 +133,6 @@ help text.
 All help/text output is line-wrapped.
 
 ``` V
-
 const (
     options = [
         ggetopt.text('Usage: myprog [OPTION]... [MESSAGE]...')
