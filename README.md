@@ -4,7 +4,7 @@ ggetopt
 A module for the [V programming language] which facilitates the use of the
 [GNU Getopt library] via a more V-like interface.
 
-Version 0.3
+Version 0.3+
 
 Features:
 - V-like getopt() shim
@@ -111,11 +111,18 @@ fn main() {
     }
     greet := if insult := opts.insult { 'Hi ${insult}' } else { 'Hello' }
     println('${greet} ${opts.name}!')
-    if rest.len > 0 {
+    if rest.len > 10 {
+        ggetopt.die('too many arguments!')
+    } else if rest.len > 0 {
         println(rest.join(' '))
     }
 }
 ```
+
+You can use `die()` to terminate with a non-zero exit code and an error message
+prefixed by the name of the binary, e.g.: `myprog: your message`.  You can get
+the name of the binary (which comes from `os.args[0]`) with `prog()`, as shown
+in the next example.
 
 OptDefs and Automatic Help (getting fancy!)
 -------------------------------------------
@@ -135,7 +142,7 @@ All help/text output is line-wrapped.
 ``` V
 const (
     options = [
-        ggetopt.text('Usage: myprog [OPTION]... [MESSAGE]...')
+        ggetopt.text('Usage: ${ggetopt.prog()} [OPTION]... [MESSAGE]...')
         ggetopt.text('')
         ggetopt.text('Options:')
         ggetopt.opt('user', `u`).arg('NAME', true)
@@ -204,6 +211,8 @@ Changes
 0.2 Renamed opt() fns; tests; help-gen improvements (wrapping, config)
 
 0.3 Added print_version(); fixed tests
+
+0.4 Aded die(), prog()
 
 Licence
 -------

@@ -201,7 +201,7 @@ pub fn option_version() OptDef {
 	return opt_version()
 }
 
-// Help Generation
+// Help Generation and Utility
 
 [params]
 pub struct PrintConfig {
@@ -231,4 +231,16 @@ pub fn print_version(version string, description []string, conf PrintConfig) {
 			println(wrapped_line)
 		}
 	}
+}
+
+// Get the programme name, as specified in os.args[0]
+pub fn prog() string {
+	return os.base(os.args[0])
+}
+
+// Print message and exit(1)
+[noreturn]
+pub fn die(msgs ...string) {
+	eprintln('${prog()}: ${msgs.join('\n')}')
+	exit(1)
 }
