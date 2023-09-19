@@ -89,13 +89,23 @@ pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]str
 				$if ggetopt_debug ? {
 					println('===${u8(opt).ascii_str()}')
 				}
-				process_fn(u8(opt).ascii_str(), arg)!
+				process_fn(u8(opt).ascii_str(), arg) or {
+					if C.opterr != 0 {
+						eprintln('${prog()}: ${err}')
+					}
+					return err
+				}
 			} else {
 				option := options[opt - 256]
 				$if ggetopt_debug ? {
 					println('===${option.long or { '' }}')
 				}
-				process_fn(option.long or { '' }, arg)!
+				process_fn(option.long or { '' }, arg) or {
+					if C.opterr != 0 {
+						eprintln('${prog()}: ${err}')
+					}
+					return err
+				}
 			}
 		}
 	}
@@ -240,7 +250,7 @@ pub fn prog() string {
 
 // Print message and exit(1)
 [noreturn]
-pub fn die(msgs ...string) {
-	eprintln('${prog()}: ${msgs.join('\n')}')
+pub fn die[T](msgs ...T) {
+	eprintln('${prog()}: ${msgs.map(it.str()).join('\n')}')
 	exit(1)
 }

@@ -25,14 +25,17 @@ fn test_line_wrapping() {
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 14, 0) == ['abc def ghi', 'jkl mno pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 15, 0) == ['abc def ghi jkl', 'mno pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 10, 0) == ['abc def', 'ghi jkl', 'mno pqr']
-	assert gen_wrapped_lines('    abc def ghi jkl mno pqr', 10, 0) == ['abc def', 'ghi jkl', 'mno pqr']
-	assert gen_wrapped_lines('abc def ghi jkl mno pqr    ', 10, 0) == ['abc def', 'ghi jkl', 'mno pqr']
+	assert gen_wrapped_lines('    abc def ghi jkl mno pqr', 10, 0) == ['abc def', 'ghi jkl',
+		'mno pqr']
+	assert gen_wrapped_lines('abc def ghi jkl mno pqr    ', 10, 0) == ['abc def', 'ghi jkl',
+		'mno pqr']
 
-	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 10, 2) == ['abc def', '  ghi jkl', '  mno pqr']
+	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 10, 2) == ['abc def', '  ghi jkl',
+		'  mno pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 9, 2) == ['abc def', '  ghi jkl', '  mno pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 8, 1) == ['abc def', ' ghi jkl', ' mno pqr']
-	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 8, 2) == ['abc def', '  ghi', '  jkl', '  mno',
-		'  pqr']
+	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 8, 2) == ['abc def', '  ghi', '  jkl',
+		'  mno', '  pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 1, 1) == ['abc', ' def', ' ghi', ' jkl',
 		' mno', ' pqr']
 
@@ -97,6 +100,15 @@ fn test_help_line() {
 	o = [opt('aaa', `a`), opt('bbbbbbbbbbb', none).help('x x x x x x x x x x x x x x y y y y')]
 	assert gen_help_lines(o, c1) == ['  -a, --aaa', '      --bbbbbbbbbbb',
 		'             x x x x x x x x x x x x x x', '               y y y y']
+	o = [opt('aaa', `a`), opt('bbbbbbbbbb', none).help('x x x x x x x x\nx x y y y y')]
+	assert gen_help_lines(o, c1) == ['  -a, --aaa', '      --bbbbbbbbbb  x x x x x x x x',
+		'                      x x y y y y']
+	o = [opt('aaa', `a`), opt('bbbbbbbbbb', none).help('x x x x x x x x    \n\n\n    x x y y y y')]
+	assert gen_help_lines(o, c1) == ['  -a, --aaa', '      --bbbbbbbbbb  x x x x x x x x',
+		'                      x x y y y y']
+	o = [opt('aaa', `a`), opt('bbbbbbbbbb', none).help('x x x x x x x x    \n  \n  \n    x x y y y y')]
+	assert gen_help_lines(o, c1) == ['  -a, --aaa', '      --bbbbbbbbbb  x x x x x x x x',
+		'                      x x y y y y']
 
 	o = [opt('aaa', `a`).help('x x x y y')]
 	c2 := PrintConfig{

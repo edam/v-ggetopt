@@ -7,6 +7,8 @@ const (
 	argv0           = ''
 	min_columns     = 30 // min acceptable terminal width (columns)
 	max_help_offset = 40 // longest long-opt name before help uses 2 lines
+
+	spaces          = [` `, `\n`, `\t`]
 )
 
 fn gen_short_optdefs(options string) ![]OptDef {
@@ -205,8 +207,12 @@ fn gen_help_lines(options []OptDef, conf PrintConfig) []string {
 				out << line
 			}
 		} else if help := option.help {
-			for line in gen_wrapped_lines(help, cols, 0) {
-				out << line
+			if help.len == 0 {
+				out << ''
+			} else {
+				for line in gen_wrapped_lines(help, cols, 0) {
+					out << line
+				}
 			}
 		}
 	}
@@ -219,7 +225,7 @@ fn gen_wrapped_lines(line string, width int, indent int) []string {
 	mut actind := 0
 	// println("LINE: len ${line.len} ${line}")
 	for i < line.len {
-		for i < line.len && line[i] == ` ` {
+		for i < line.len && line[i] in ggetopt.spaces {
 			i++
 		}
 		from := i
@@ -227,9 +233,13 @@ fn gen_wrapped_lines(line string, width int, indent int) []string {
 		mut insp := false
 		for i < line.len && (till == -1 || i - from <= (width - actind)) {
 			oldinsp := insp
-			insp = line[i] == ` `
+			c := line[i]
+			insp = c in ggetopt.spaces
 			if insp && !oldinsp {
 				till = i
+			}
+			if c == `\n` {
+				break
 			}
 			i++
 		}

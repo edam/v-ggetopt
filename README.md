@@ -23,8 +23,8 @@ Usage
 
 The API has been kept in the spirit of GNU getopt library.
 
-Short Options (not recommended)
--------------------------------
+Short Options (very basic)
+--------------------------
 
 At its most basic, you can use `getopt()` to process only short options, similar
 to how you would in C.  The only major different is that processing programme
@@ -212,7 +212,8 @@ Changes
 
 0.3 Added print_version(); fixed tests
 
-0.4 Aded die(), prog()
+0.4 Aded die(), prog(); fixed text(''); gen_wraped_lines() handles newlines;
+    errors from process_fn are eprintln()ed when report_errors(true)
 
 Licence
 -------
