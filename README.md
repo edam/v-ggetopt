@@ -206,14 +206,14 @@ $ v -d ggetopt_debug ...
 Changes
 -------
 
-0.1 Initial version
+0.1 - Initial version
 
-0.2 Renamed opt() fns; tests; help-gen improvements (wrapping, config)
+0.2 - Renamed opt() fns; tests; help-gen improvements (wrapping, config)
 
-0.3 Added print_version(); fixed tests
+0.3 - Added print_version(); fixed tests
 
-0.4 Aded die(), prog(); fixed text(''); gen_wraped_lines() handles newlines;
-    errors from process_fn are eprintln()ed when report_errors(true)
+0.4 - Added die(), prog(); fixed text(''); gen_wraped_lines() handles newlines;
+      errors from process_fn are eprintln()ed when report_errors(true)
 
 Licence
 -------
