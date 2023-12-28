@@ -14,7 +14,7 @@ pub struct OptDef {
 }
 
 pub struct OptArgDef {
-	name     string [required] // option-argument name (for print_help())
+	name     string @[required] // option-argument name (for print_help())
 	optional bool // is option-argument optional?
 }
 
@@ -124,7 +124,7 @@ pub fn report_errors(enable bool) {
 
 // Make an OptDef for a long option with optional short option, which can be
 // extended via .arg() and .help() methods.
-[inline]
+@[inline]
 pub fn opt(long ?string, short ?rune) OptDef {
 	return OptDef{
 		long: long
@@ -133,7 +133,7 @@ pub fn opt(long ?string, short ?rune) OptDef {
 }
 
 // Extend an OptDef to include a named argument.
-[inline]
+@[inline]
 pub fn (o &OptDef) arg(name string, required bool) OptDef {
 	return OptDef{
 		...o
@@ -145,7 +145,7 @@ pub fn (o &OptDef) arg(name string, required bool) OptDef {
 }
 
 // Extend an OptDef to include help text for the option.
-[inline]
+@[inline]
 pub fn (o &OptDef) help(help string) OptDef {
 	return OptDef{
 		...o
@@ -196,24 +196,24 @@ pub fn (opts []OptDef) find_long(long string) ?OptDef {
 	return none
 }
 
-[deprecated: 'use opt() instead']
+@[deprecated: 'use opt() instead']
 pub fn option(long ?string, short ?rune) OptDef {
 	return opt(long, short)
 }
 
-[deprecated: 'use opt_help() instead']
+@[deprecated: 'use opt_help() instead']
 pub fn option_help() OptDef {
 	return opt_help()
 }
 
-[deprecated: 'use opt_version() instead']
+@[deprecated: 'use opt_version() instead']
 pub fn option_version() OptDef {
 	return opt_version()
 }
 
 // Help Generation and Utility
 
-[params]
+@[params]
 pub struct PrintConfig {
 	// wrapping
 	columns     int // width of terminal (defaults to COLUMNS from environment)
@@ -249,7 +249,7 @@ pub fn prog() string {
 }
 
 // Print message and exit(1)
-[noreturn]
+@[noreturn]
 pub fn die[T](msgs ...T) {
 	eprintln('${prog()}: ${msgs.map(it.str()).join('\n')}')
 	exit(1)
