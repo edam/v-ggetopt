@@ -225,8 +225,10 @@ fn gen_wrapped_lines(line string, width int, indent int) []string {
 	mut actind := 0
 	// println("LINE: len ${line.len} ${line}")
 	for i < line.len {
-		for i < line.len && line[i] in ggetopt.spaces {
-			i++
+		if i > 0 {
+			for i < line.len && line[i] in ggetopt.spaces {
+				i++
+			}
 		}
 		from := i
 		mut till := -1
