@@ -215,7 +215,7 @@ Changes
 0.4 - Added die(), prog(); fixed text(''); gen_wraped_lines() handles newlines;
       errors from process_fn() are eprintln()ed when reporting_errors(true)
 
-0.5 - fix warnings
+0.5 - fix warnings; fix for lines starting with spaces
 
 Licence
 -------
