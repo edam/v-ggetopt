@@ -3,13 +3,13 @@ module ggetopt
 import math
 import os
 
-const (
-	argv0           = ''
-	min_columns     = 30 // min acceptable terminal width (columns)
-	max_help_offset = 40 // longest long-opt name before help uses 2 lines
+const argv0 = ''
+const all_spaces = [` `, `\n`, `\t`]
+const initial_spaces = [`\n`, `\t`]
 
-	spaces          = [` `, `\n`, `\t`]
-)
+const min_columns = 30 // min acceptable terminal width (columns)
+
+const max_help_offset = 40 // longest long-opt name before help uses 2 lines
 
 fn gen_short_optdefs(options string) ![]OptDef {
 	mut res := []OptDef{}
@@ -225,10 +225,9 @@ fn gen_wrapped_lines(line string, width int, indent int) []string {
 	mut actind := 0
 	// println("LINE: len ${line.len} ${line}")
 	for i < line.len {
-		if i > 0 {
-			for i < line.len && line[i] in ggetopt.spaces {
-				i++
-			}
+		spaces := if i == 0 { ggetopt.initial_spaces } else { ggetopt.all_spaces }
+		for i < line.len && line[i] in spaces {
+			i++
 		}
 		from := i
 		mut till := -1
@@ -236,7 +235,7 @@ fn gen_wrapped_lines(line string, width int, indent int) []string {
 		for i < line.len && (till == -1 || i - from <= (width - actind)) {
 			oldinsp := insp
 			c := line[i]
-			insp = c in ggetopt.spaces
+			insp = c in ggetopt.all_spaces
 			if insp && !oldinsp {
 				till = i
 			}

@@ -6,12 +6,14 @@ fn test_line_wrapping() {
 	assert gen_wrapped_lines('     ', 10, 0) == []
 	assert gen_wrapped_lines('a', 10, 0) == ['a']
 	assert gen_wrapped_lines('a a', 10, 0) == ['a a']
-	assert gen_wrapped_lines(' a a', 10, 0) == ['a a']
-	assert gen_wrapped_lines('     a a', 10, 0) == ['a a']
+	assert gen_wrapped_lines(' a a', 10, 0) == [' a a']
+	assert gen_wrapped_lines('\ta a', 10, 0) == ['a a']
+	assert gen_wrapped_lines('     a a', 10, 0) == ['     a a']
+	assert gen_wrapped_lines('\t\t\t\t\ta a', 10, 0) == ['a a']
 	assert gen_wrapped_lines('a a ', 10, 0) == ['a a']
 	assert gen_wrapped_lines('a a      ', 10, 0) == ['a a']
-	assert gen_wrapped_lines('       a      ', 10, 0) == ['a']
-	assert gen_wrapped_lines('                a               ', 10, 0) == ['a']
+	assert gen_wrapped_lines('       a      ', 10, 0) == ['       a']
+	assert gen_wrapped_lines('\t\t\t\t\t\t\t\t\t\ta               ', 10, 0) == ['a']
 	assert gen_wrapped_lines('aaaaaaaaaaaaaaaaaaaaaa', 10, 0) == [
 		'aaaaaaaaaaaaaaaaaaaaaa',
 	]
@@ -25,8 +27,7 @@ fn test_line_wrapping() {
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 14, 0) == ['abc def ghi', 'jkl mno pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 15, 0) == ['abc def ghi jkl', 'mno pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 10, 0) == ['abc def', 'ghi jkl', 'mno pqr']
-	assert gen_wrapped_lines('    abc def ghi jkl mno pqr', 10, 0) == ['abc def', 'ghi jkl',
-		'mno pqr']
+	assert gen_wrapped_lines('abc def ghi jkl mno pqr', 10, 0) == ['abc def', 'ghi jkl', 'mno pqr']
 	assert gen_wrapped_lines('abc def ghi jkl mno pqr    ', 10, 0) == ['abc def', 'ghi jkl',
 		'mno pqr']
 
