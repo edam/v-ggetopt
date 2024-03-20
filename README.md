@@ -132,6 +132,9 @@ fn main() {
 
 Notes
 
+* `print_help(options []OptDef, conf PrintConfig)` can be used to automatically
+  generate help for an array of `OptDef`s.  `PrintConfig` can be omitted.
+
 * `die[T](msg ...T)` can be used to terminate with error (exit code 1) and print
   a message to stderr prefixed with the binary name, e.g.: `myprog: some
   message`.
@@ -188,7 +191,8 @@ Options:
 Notes
 
 * `print_version(version string, description []string, conf PrintConfig)` also
-  exists to help with `--version` output.
+  exists to complement `print_help()` and generates output for `--version`.
+  `PrintConfig` can be omitted.
 
 * `prog() string`, as shown above, can be used to get the name of the binary
   (which it gets from `os.args[0]`).
