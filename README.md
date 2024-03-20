@@ -59,7 +59,10 @@ fn main() {
 
 Notes
 
-* `getopt_cli()` just calls `getopt()`, passing in `os.args`.
+* `getopt(args []string, options string, process_fn ProcessFn) ![]string`
+  processed short opts and returns any unused arguments
+* `getopt_cli()` just calls `getopt()`, passing in `os.args` as the first
+  argument.
 
 Long Options (typical usage)
 ----------------------------
@@ -69,9 +72,10 @@ unlike in C, the short options are not given separately as a string.
 
 The array of options (`OptDef`s, actually) is built-up with the following helper
 functions (and some more, introduced in the next section):
-* option factory function: `opt(long_name string, short_opt ?rune)`
-* extend an option with an argument: `arg(arg_name string, required bool)`
-* standard `--help` option factory function: `opt_help()`
+* `opt(long_name string, short_opt ?rune) OptDef` is an option factory function
+* `(OptDef) arg(arg_name string, required bool) OptDef` can be used to extend an
+  option, giving it an argument
+* `opt_help() OptDef` is a factory function returning a standard `--help` option
 
 ``` V
 import edam.ggetopt
@@ -128,11 +132,13 @@ fn main() {
 
 Notes
 
-* `die()` can be used to terminate with error (exit code 1) and print a message
-  to stderr prefixed with the binary name, e.g.: `myprog: some message`.
+* `die[T](msg ...T)` can be used to terminate with error (exit code 1) and print
+  a message to stderr prefixed with the binary name, e.g.: `myprog: some
+  message`.
 
-* `die_hint()`, as shown above, is the same as `die()` but also includes a
-  message hinting the user to "Try `myprog --help` for more information."
+* `die_hint[T](msg ...T)`, as shown above, is the same as `die()` but also
+  includes a message hinting the user to "Try `myprog --help` for more
+  information."
 
 OptDefs and Automatic Help (getting fancy!)
 -------------------------------------------
@@ -142,9 +148,12 @@ for options and also general lines of text, which `print_help()` includes in its
 output.
 
 More of those array-building helpers:
-* extend an option with help text: `help(text string)`
-* line of text (not an option) factory function: `text(text string)`
-* standard `--version` option factory function: `opt_version()`
+* `(OptDef) help(text string) OptDef` can be used to extend an option and
+  supplement it with help text
+* `text(text string) OptDef` is a factory function for a line of help text (so,
+  not an option)
+* `opt_version() OptDef` is a factory function returning a standard `--version`
+  option
 
 E.g.,
 
@@ -178,10 +187,11 @@ Options:
 
 Notes
 
-* `print_version()` also exists, to help with `--version` output.
+* `print_version(version string, description []string, conf PrintConfig)` also
+  exists to help with `--version` output.
 
-* `prog()`, as shown above, can be used to get the name of the binary (which it
-  gets from `os.args[0]`).
+* `prog() string`, as shown above, can be used to get the name of the binary
+  (which it gets from `os.args[0]`).
 
 Error handling
 --------------
@@ -202,7 +212,8 @@ that errors are automatically emitted to stderr, please note the following:
 
 Notes
 
-* `report_errors()` can use used to turn on/off automatic error emitting.
+* `report_errors(enable bool)` can use used to turn on/off automatic error
+  emitting.
 
 Development
 ===========
