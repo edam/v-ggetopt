@@ -1,7 +1,7 @@
 Module {
    name: 'ggetopt'
    author: 'Tim Marston'
-   version: '0.6dev'
+   version: '0.6'
    dependencies: []
    repo_url: 'https://github.com/edam/vlang-gredline'
    vcs: 'git'
