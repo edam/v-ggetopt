@@ -19,3 +19,7 @@ struct C.option {
 }
 
 fn C.getopt_long(argc int, argv &&char, shortopts &char, longopts &C.option, indexptr &int) int
+
+fn init() {
+	C.opterr = 0
+}

@@ -122,6 +122,15 @@ fn gen_c_args(args []string) (int, &&char) {
 	// return argc, argv
 }
 
+fn gen_remain_from_c_args(argc int, argv &&char, skip int) []string {
+	mut args := []string{}
+	for i := skip; i < argc; i++ {
+		ptr := unsafe { &&char(argv + i) }
+		args << unsafe { tos3(*ptr) }
+	}
+	return args
+}
+
 fn calc_cols(conf PrintConfig) int {
 	mut cols := conf.columns
 	if cols <= 0 {

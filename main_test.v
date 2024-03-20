@@ -12,14 +12,14 @@ fn test_shortopts() {
 		opt(none, `e`).arg('EEE', false),
 	]
 
-	ot := new_opt_tester(o)
+	ot := new_opt_tester(o, true)
 	defer {
 		ot.cleanup()
 	}
 
 	ot.run_ok('') // test runs ok
 
-	// inbuilt errors
+	// execution errors -- reported
 	ot.run_fail('-x') // invalid option -- x
 	ot.run_fail('--xxx') // unrecognised option '--xxx'
 
@@ -34,13 +34,29 @@ fn test_version() {
 		opt_version(),
 	]
 
-	ot := new_opt_tester(o)
+	ot := new_opt_tester(o, true)
 	defer {
 		ot.cleanup()
 	}
 
 	// inbuilt errors
 	ot.run_version()
+}
+
+fn test_die_errors() {
+	o := [
+		opt_help(),
+		opt_version(),
+	]
+
+	ot := new_opt_tester(o, false)
+	defer {
+		ot.cleanup()
+	}
+
+	// inbuilt errors
+	ot.run_fail('-x') // invalid option -- x
+	ot.run_fail('--xxx') // unrecognised option '--xxx'
 }
 
 // --
@@ -50,7 +66,7 @@ struct OptTester {
 	vfile   string
 }
 
-fn new_opt_tester(options []OptDef) &OptTester {
+fn new_opt_tester(options []OptDef, rep_errs bool) &OptTester {
 	mut gen_opts := []string{}
 	for opt in options {
 		mut gen_opt := ''
@@ -77,7 +93,8 @@ fn new_opt_tester(options []OptDef) &OptTester {
 		gen_opt += ','
 		gen_opts << gen_opt
 	}
-	content := 'import edam.ggetopt
+	mut content := '
+import edam.ggetopt
 const opts = [
     ${gen_opts.join('\n        ')}
 ]
@@ -85,9 +102,19 @@ fn proc_fn(arg string, optarg ?string) ! {
     if arg == "version" { ggetopt.print_version("x", ["y"]) exit(0) }
     if arg == "help" { ggetopt.print_help(opts) exit(0) }
 }
+'
+	if rep_errs {
+		content += '
 fn main() {
+    ggetopt.report_errors(true)
     ggetopt.getopt_long_cli(opts, proc_fn) or { exit(1) }
 }'
+	} else {
+		content += '
+fn main() {
+    ggetopt.getopt_long_cli(opts, proc_fn) or { ggetopt.die_hint(1) }
+}'
+	}
 	vfile := os.join_path(os.vtmp_dir(), rand.string(8) + '.v')
 	os.write_file(vfile, content) or { panic(err) }
 	return &OptTester{
@@ -147,5 +174,5 @@ fn (ot &OptTester) run_version() {
 }
 
 fn (ot &OptTester) cleanup() {
-	os.rm(ot.vfile) or { panic(err) }
+	//	os.rm(ot.vfile) or { panic(err) }
 }

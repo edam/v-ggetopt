@@ -52,17 +52,23 @@ pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]str
 	defer {
 		unsafe { free(argv) }
 	}
-	$if ggetopt_debug ? {
+	$if trace_ggetopt ? {
 		println('---argc: ${argc}')
 		println('---shortopts: ${shortopts}')
+		// println('---longopts: ${longopts}')
 	}
 	C.optind = 1 // reset getopt
 	mut idx := int(0)
 	for {
 		opt := C.getopt_long(argc, argv, shortopts.str, &longopts[0], &idx)
-		$if ggetopt_debug ? {
-			ch := if opt < 256 { u8(opt).ascii_str() } else { '' }
-			println('---OPT: ${opt} (${ch}), idx ${idx} (optopt: ${C.optopt}, optarg: ${C.optarg}, optind: ${C.optind})')
+		$if trace_ggetopt ? {
+			ch := if opt >= 32 && opt < 256 { ' (${u8(opt).ascii_str()})' } else { '' }
+			arg := if C.optarg != 0 {
+				unsafe { cstring_to_vstring(&char(C.optarg)) }
+			} else {
+				'NULL'
+			}
+			println('---OPT: ${opt}${ch}, idx ${idx} (optopt: ${C.optopt}, optarg: ${arg}, optind: ${C.optind})')
 		}
 		if opt < 0 {
 			break
@@ -85,37 +91,30 @@ pub fn getopt_long(args []string, options []OptDef, process_fn ProcessFn) ![]str
 			if C.optarg != 0 {
 				arg = unsafe { cstring_to_vstring(&char(C.optarg)) }
 			}
-			if opt < 256 {
-				$if ggetopt_debug ? {
-					println('===${u8(opt).ascii_str()}')
+			selopt := match true {
+				opt < 256 { u8(opt).ascii_str() }
+				else { options[opt - 256].long or { '' } }
+			}
+			$if trace_ggetopt ? {
+				println('---processing ${selopt}')
+			}
+			process_fn(selopt, arg) or {
+				if C.opterr != 0 {
+					eprintln('${prog()}: ${err}')
 				}
-				process_fn(u8(opt).ascii_str(), arg) or {
-					if C.opterr != 0 {
-						eprintln('${prog()}: ${err}')
-					}
-					return err
-				}
-			} else {
-				option := options[opt - 256]
-				$if ggetopt_debug ? {
-					println('===${option.long or { '' }}')
-				}
-				process_fn(option.long or { '' }, arg) or {
-					if C.opterr != 0 {
-						eprintln('${prog()}: ${err}')
-					}
-					return err
-				}
+				return err
 			}
 		}
 	}
-	$if ggetopt_debug ? {
-		println('---remain idx: ${C.optind}')
+	remain := gen_remain_from_c_args(argc, argv, C.optind)
+	$if trace_ggetopt ? {
+		println('---optind: ${C.optind}')
+		println('---remain: ${remain}')
 	}
-	return args[(C.optind - 1)..]
+	return remain
 }
 
-// Turn on/off printing of errors to stderr.  Enabled by default.
+// Turn on/off automatic printing of errors to stderr.  Disabled by default.
 pub fn report_errors(enable bool) {
 	C.opterr = if enable { 1 } else { 0 }
 }
@@ -252,5 +251,13 @@ pub fn prog() string {
 @[noreturn]
 pub fn die[T](msgs ...T) {
 	eprintln('${prog()}: ${msgs.map(it.str()).join('\n')}')
+	exit(1)
+}
+
+// Print message and hint to try --help and exit
+@[noreturn]
+pub fn die_hint[T](msgs ...T) {
+	eprintln('${prog()}: ${msgs.map(it.str()).join('\n')}')
+	eprintln('Try `${prog()} --help` for more information.')
 	exit(1)
 }
