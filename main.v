@@ -121,7 +121,7 @@ pub fn report_errors(enable bool) {
 
 // OptDefs functions
 
-// Make an OptDef for a long option with optional short option, which can be
+// Make new OptDef for a long option with optional short option, which can be
 // extended via .arg() and .help() methods.
 @[inline]
 pub fn opt(long ?string, short ?rune) OptDef {
@@ -131,7 +131,7 @@ pub fn opt(long ?string, short ?rune) OptDef {
 	}
 }
 
-// Extend an OptDef to include a named argument.
+// Extend existing OptDef to include a named argument.
 @[inline]
 pub fn (o &OptDef) arg(name string, required bool) OptDef {
 	return OptDef{
@@ -143,7 +143,7 @@ pub fn (o &OptDef) arg(name string, required bool) OptDef {
 	}
 }
 
-// Extend an OptDef to include help text for the option.
+// Extend existing OptDef to include help text for the option.
 @[inline]
 pub fn (o &OptDef) help(help string) OptDef {
 	return OptDef{
@@ -152,7 +152,7 @@ pub fn (o &OptDef) help(help string) OptDef {
 	}
 }
 
-// Make an OptDef for a --help option
+// Make new OptDef for a standard --help option
 pub fn opt_help() OptDef {
 	return OptDef{
 		long: 'help'
@@ -160,7 +160,7 @@ pub fn opt_help() OptDef {
 	}
 }
 
-// Make an OptDef for a --version option
+// Make new OptDef for a standard --version option
 pub fn opt_version() OptDef {
 	return OptDef{
 		long: 'version'
@@ -168,10 +168,12 @@ pub fn opt_version() OptDef {
 	}
 }
 
-// Make OptDef which displays some text in print_help()
-pub fn text(text string) OptDef {
+// Make new OptDef which is not an option, but causes print_help() to emit a
+// line of text amongst the options.  Lines are wrapped, and `text()` (i.e.,
+// with no argument) emits an empty line.
+pub fn text(lines ...string) OptDef {
 	return OptDef{
-		help: text
+		help: lines.join('\n')
 	}
 }
 
@@ -185,7 +187,7 @@ pub fn (opts []OptDef) find_short(short rune) ?OptDef {
 	return none
 }
 
-// Find an OptDef by it's short option.
+// Find an OptDef by it's long option.
 pub fn (opts []OptDef) find_long(long string) ?OptDef {
 	for opt in opts {
 		if opt.long or { '' } == long {
@@ -217,9 +219,8 @@ pub struct PrintConfig {
 	// wrapping
 	columns     int // width of terminal (defaults to COLUMNS from environment)
 	min_columns int = 40 // min acceptable terminal width (columns)
-	wrap_indent int = 2 // after wrapping, indent by spaces
-	// line overflowing
-	max_offset int = 40 // longest option before starting on second line
+	wrap_indent int = 2 // after wrapping, indent by spaces line overflowing
+	max_offset  int = 40 // largest width of option+arg before help on next line
 }
 
 // Generate and print program help (e.g., in response to --help), based on the

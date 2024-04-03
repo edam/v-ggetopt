@@ -153,8 +153,8 @@ output.
 More of those array-building helpers:
 * `(OptDef) help(text string) OptDef` can be used to extend an option and
   supplement it with help text
-* `text(text string) OptDef` is a factory function for a line of help text (so,
-  not an option)
+* `text(lines ...string) OptDef` is a factory function for a line of help text
+  (i.e., not an option)
 * `opt_version() OptDef` is a factory function returning a standard `--version`
   option
 
@@ -163,7 +163,7 @@ E.g.,
 ``` V
 const options = [
     ggetopt.text('Usage: ${ggetopt.prog()} [OPTION]... [MESSAGE]...')
-    ggetopt.text('')
+    ggetopt.text()
     ggetopt.text('Options:')
     ggetopt.opt('user', `u`).arg('NAME', true)
         .help("provide the user's NAME")
@@ -253,7 +253,7 @@ Changes
 0.5 - fix warnings; fix for lines starting with spaces
 
 0.6 - fix returned non-option args; added die_hint(); rename trace_ggetopt;
-      report_errors off by default
+      report_errors off by default; text(...string)
 
 Licence
 -------
